@@ -1,0 +1,5 @@
+name: NoDeathSpread
+version: 1.0.0
+main: dev.reed.NoDeathSpread
+api-version: '1.21.11'
+description: Stops player death drops from spreading out.
