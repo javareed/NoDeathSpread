@@ -18,22 +18,22 @@ public final class NoDeathSpread extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
     }
 
-    // other plugins need to finish changing the death event before this handler
     @EventHandler(priority = EventPriority.HIGHEST, ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
         Location pos = event.getEntity().getLocation();
         List<ItemStack> drops = new ArrayList<>(event.getDrops());
         event.getDrops().clear();
 
-        // keepInventory doesnt suppress explicit drops added by other plugins
-        for (ItemStack stack : drops) {
-            if (stack == null || stack.isEmpty())
-                continue;
-
-            pos.getWorld().dropItem(pos, stack, item -> {
-                item.setVelocity(new Vector());
-                item.setPickupDelay(40);
-            });
-        }
+        // another highest handler can still cancel the death after ours
+        getServer().getScheduler().runTask(this, () -> {
+            if (event.isCancelled()) return;
+            for (ItemStack stack : drops) {
+                if (stack == null || stack.isEmpty()) continue;
+                pos.getWorld().dropItem(pos, stack, item -> {
+                    item.setVelocity(new Vector());
+                    item.setPickupDelay(40);
+                });
+            }
+        });
     }
 }
